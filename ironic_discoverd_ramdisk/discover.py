@@ -138,7 +138,8 @@ def discover_scheduling_properties(data, failures):
     scripts = [
         ('cpus', "grep processor /proc/cpuinfo | wc -l"),
         ('cpu_arch', "lscpu | grep Architecture | awk '{ print $2 }'"),
-        ('local_gb', "fdisk -l | grep Disk | awk '{print $5}' | head -n 1"),
+        ('local_gb', "lsblk -bSo NAME,SIZE,TYPE | tail -n +2 | grep disk | "
+         "sort | head -n1 | awk '{ print $2; }'"),
     ]
     for key, script in scripts:
         data[key] = try_shell(script)
