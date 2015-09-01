@@ -194,11 +194,18 @@ class TestDiscoverNetworkInterfaces(BaseDiscoverTest):
         self.assertFalse(self.failures)
 
 
+FAKE_RAM = """
+    Size: 1024 MB
+    Size: no
+    Size: 1024 MB
+    Size: 2 GB
+"""
+
+
 @mock.patch.object(discover, 'try_shell', autospec=True)
 class TestDiscoverSchedulingProperties(BaseDiscoverTest):
     def test_ok(self, mock_shell):
-        mock_shell.side_effect = iter(('2', 'x86_64', '5368709120',
-                                       '1024\n1024\nno\n2048\n'))
+        mock_shell.side_effect = iter(('2', 'x86_64', '5368709120', FAKE_RAM))
 
         discover.discover_scheduling_properties(self.data, self.failures)
 
@@ -216,8 +223,7 @@ class TestDiscoverSchedulingProperties(BaseDiscoverTest):
                           'memory_mb': None}, self.data)
 
     def test_no_local_gb(self, mock_shell):
-        mock_shell.side_effect = iter(('2', 'x86_64', None,
-                                       '1024\n1024\nno\n2048\n'))
+        mock_shell.side_effect = iter(('2', 'x86_64', None, FAKE_RAM))
 
         discover.discover_scheduling_properties(self.data, self.failures)
 
@@ -226,8 +232,7 @@ class TestDiscoverSchedulingProperties(BaseDiscoverTest):
                           'memory_mb': 4096}, self.data)
 
     def test_local_gb_too_small(self, mock_shell):
-        mock_shell.side_effect = iter(('2', 'x86_64', '42',
-                                       '1024\n1024\nno\n2048\n'))
+        mock_shell.side_effect = iter(('2', 'x86_64', '42', FAKE_RAM))
 
         discover.discover_scheduling_properties(self.data, self.failures)
 

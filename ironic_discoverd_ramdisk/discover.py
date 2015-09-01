@@ -146,14 +146,25 @@ def discover_scheduling_properties(data, failures):
         LOG.info('value for "%s" field is %s', key, data[key])
 
     ram_info = try_shell(
-        "dmidecode --type memory | grep Size | awk '{ print $2; }'")
+        "dmidecode --type memory | grep Size")
     if ram_info:
         total_ram = 0
         for ram_record in ram_info.split('\n'):
+            ram_record = ram_record.strip()
+            if not ram_record:
+                continue
+
             try:
-                total_ram += int(ram_record)
+                value, units = ram_record.split()[1:]
+                value = int(value)
             except ValueError:
+                LOG.warn('unexpected memory record: %s', ram_record)
                 pass
+            else:
+                if units.lower() in ('gb', 'gib'):
+                    value *= 1024
+                total_ram += value
+
         data['memory_mb'] = total_ram
         LOG.info('total RAM: %s MiB', total_ram)
     else:
